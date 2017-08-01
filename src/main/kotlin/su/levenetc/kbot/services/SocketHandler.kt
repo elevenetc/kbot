@@ -1,19 +1,21 @@
 package su.levenetc.kbot.services
 
 
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.WebSocketHandler
 import org.springframework.web.socket.WebSocketMessage
 import org.springframework.web.socket.WebSocketSession
+import su.levenetc.kbot.utils.getField
+
 
 /**
  * Created by eugene.levenetc on 13/07/2017.
  */
 class SocketHandler : WebSocketHandler {
 
-    var logger: Logger = LogManager.getFormatterLogger(SocketHandler::class.java)
+    var logger: Logger = LoggerFactory.getLogger(SocketHandler::class.java)
     var session: WebSocketSession? = null
 
     override fun handleTransportError(session: WebSocketSession?, exception: Throwable?) {
@@ -25,10 +27,22 @@ class SocketHandler : WebSocketHandler {
     }
 
     override fun handleMessage(session: WebSocketSession?, message: WebSocketMessage<*>?) {
-        //logger.log()
-        logger.debug("handleMessage:%s", message.toString())
-        logger.info("handleMessage:%s", message.toString())
-        logger.info("hello")
+
+        val payload: String = message?.payload.toString()
+        logger.info(payload)
+        val type = getField(payload)
+        logger.info(type)
+
+        if (type == "presence_change") {
+
+        } else if (type == "reconnect_url") {
+
+        } else if (type == "hello") {
+
+        }
+
+        //session?.sendMessage(TextMessage(""))
+        //logger.info("handleMessage: {}", payload)
     }
 
     override fun afterConnectionEstablished(session: WebSocketSession?) {
