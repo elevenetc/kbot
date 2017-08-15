@@ -1,8 +1,6 @@
 package su.levenetc.kbot.services
 
-import su.levenetc.kbot.lib.KBot
 import su.levenetc.kbot.models.User
-import javax.annotation.PreDestroy
 
 
 /**
@@ -14,7 +12,7 @@ class RtmService(val token: String) {
 
     init {
 
-        KBot().connect(token)
+
 
         //val rtmState: RtmState = restTemplate.getForObject("https://slack.com/api/rtm.start?token=$token", RtmState::class.java)
         //socketConnection = WebSocketConnectionManager(StandardWebSocketClient(), socketHandler, rtmState.url)
