@@ -51,6 +51,9 @@ class WebSocketClientHandler(val handShaker: WebSocketClientHandshaker) : Simple
             println("pont message")
         } else if (frame is CloseWebSocketFrame) {
             ch.close()
+        } else if (frame is PingWebSocketFrame) {
+            frame.content().retain()
+            ctx.channel().writeAndFlush(PongWebSocketFrame(frame.content()))
         } else {
             println("unhandled frame: $frame")
         }
