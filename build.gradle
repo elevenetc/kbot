@@ -45,5 +45,5 @@ dependencies {
     compile "com.squareup.retrofit2:converter-gson:${verRetrofit}"
 
     //Netty
-    compile 'io.netty:netty-all:4.0.24.Final'
+    compile 'io.netty:netty-all:4.1.14.Final'
 }
