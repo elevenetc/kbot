@@ -29,8 +29,8 @@ class KBot(val token: String) {
 
                 if (rtmState != null) {
                     println(rtmState.url)
-                    WebSocketClient("wss://echo.websocket.org").connect()
-                    //WebSocketClient(rtmState.url).connect()
+//                    WebSocketClient("wss://echo.websocket.org").connect()
+                    WebSocketClient(rtmState.url).connect()
                 }
 
 

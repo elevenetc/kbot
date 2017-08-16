@@ -45,7 +45,8 @@ class WebSocketClientHandler(val handShaker: WebSocketClientHandshaker) : Simple
 
         val frame = msg as WebSocketFrame
         if (frame is TextWebSocketFrame) {
-            println("text message: $frame")
+            val text = frame.text()
+            println("text message: $text")
         } else if (frame is PongWebSocketFrame) {
             println("pont message")
         } else if (frame is CloseWebSocketFrame) {

@@ -16,6 +16,8 @@ import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
+import io.netty.handler.ssl.SslContext
+import io.netty.handler.ssl.SslContextBuilder
 import java.net.URI
 import java.util.*
 
@@ -29,11 +31,15 @@ class WebSocketClient(val uri: String) {
         val uri: URI = URI.create(uri)
         val handler = WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 1280000))
 
-        bootstrap.group(group)
+        bootstrap.group(NioEventLoopGroup())
                 .channel(NioSocketChannel::class.java)
                 .handler(object : ChannelInitializer<SocketChannel>() {
+
+                    val sslCtx: SslContext = SslContextBuilder.forClient().build()
+
                     override fun initChannel(ch: SocketChannel) {
                         val pipeline = ch.pipeline()
+                        pipeline.addLast("ssl-handler", sslCtx.newHandler(ch.alloc(), uri.host, 443))
                         pipeline.addLast("http-codec", HttpClientCodec())
                         pipeline.addLast("aggregator", HttpObjectAggregator(65536))
                         pipeline.addLast("ws-handler", handler)
@@ -50,10 +56,6 @@ class WebSocketClient(val uri: String) {
 
     fun eval(text: String) {
         ch.writeAndFlush(TextWebSocketFrame(text))
-    }
-
-    companion object {
-        private val group = NioEventLoopGroup()
     }
 
     inner class TimeClientHandler : ChannelInboundHandlerAdapter() {
