@@ -1,27 +1,30 @@
 package su.levenetc.kbot
 
+import io.reactivex.Observable
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import su.levenetc.kbot.models.Event
 import su.levenetc.kbot.models.RtmState
-import su.levenetc.kbot.network.buildHttpApi
+import su.levenetc.kbot.network.http.buildHttpApi
 import su.levenetc.kbot.network.socket.WebSocketClient
 import su.levenetc.kbot.utils.fatalStop
 
 
 class KBot(val token: String) {
 
-    var httpApi = buildHttpApi()
+    val httpApi = buildHttpApi()
+    lateinit var socketClient: WebSocketClient
 
     init {
         if (token.isNullOrEmpty()) fatalStop("No defined Slack token")
     }
 
-    fun start() {
+    fun start(callBack: InitCallback) {
         val rtmState = httpApi.rtmConnect(token)
         rtmState.enqueue(object : Callback<RtmState> {
             override fun onFailure(call: Call<RtmState>?, t: Throwable?) {
-
+                callBack.onError()
             }
 
             override fun onResponse(call: Call<RtmState>?, response: Response<RtmState>) {
@@ -30,13 +33,20 @@ class KBot(val token: String) {
                 if (rtmState != null) {
                     println(rtmState.url)
 //                    WebSocketClient("wss://echo.websocket.org").connect()
-                    WebSocketClient(rtmState.url).connect()
+                    socketClient = WebSocketClient(rtmState.url)
+                    socketClient.connect()
+                    callBack.onSuccess(socketClient.eventsObservable())
                 }
 
 
             }
 
         })
+    }
+
+    interface InitCallback {
+        fun onError()
+        fun onSuccess(eventsObservable: Observable<Event>)
     }
 
 }

@@ -6,8 +6,8 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
+import io.netty.handler.codec.http.EmptyHttpHeaders
 import io.netty.handler.codec.http.HttpClientCodec
-import io.netty.handler.codec.http.HttpHeaders
 import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
@@ -15,17 +15,23 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import io.netty.handler.ssl.SslContext
 import io.netty.handler.ssl.SslContextBuilder
+import io.reactivex.Observable
+import su.levenetc.kbot.models.Event
 import java.net.URI
 
 
 class WebSocketClient(val uri: String) {
 
-    lateinit var ch: Channel
+    private lateinit var ch: Channel
+    private val eventsParser = EventsParser()
 
     fun connect() {
         val bootstrap = Bootstrap()
         val uri: URI = URI.create(uri)
-        val handler = WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 1280000))
+        val handler = WebSocketClientHandler(
+                WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 1280000),
+                eventsParser
+        )
 
         bootstrap.group(NioEventLoopGroup())
                 .channel(NioSocketChannel::class.java)
@@ -52,5 +58,9 @@ class WebSocketClient(val uri: String) {
 
     fun eval(text: String) {
         ch.writeAndFlush(TextWebSocketFrame(text))
+    }
+
+    fun eventsObservable(): Observable<Event> {
+        return eventsParser.publishSubject
     }
 }

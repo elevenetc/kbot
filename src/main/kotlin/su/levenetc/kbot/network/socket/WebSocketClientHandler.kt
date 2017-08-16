@@ -6,7 +6,10 @@ import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.websocketx.*
 
-class WebSocketClientHandler(val handShaker: WebSocketClientHandshaker) : SimpleChannelInboundHandler<Any>() {
+class WebSocketClientHandler(
+        val handShaker: WebSocketClientHandshaker,
+        val eventsParser: EventsParser
+) : SimpleChannelInboundHandler<Any>() {
 
     lateinit var channelPromise: ChannelPromise
 
@@ -46,6 +49,7 @@ class WebSocketClientHandler(val handShaker: WebSocketClientHandshaker) : Simple
         val frame = msg as WebSocketFrame
         if (frame is TextWebSocketFrame) {
             val text = frame.text()
+            eventsParser.handleMessage(text)
             println("text message: $text")
         } else if (frame is PongWebSocketFrame) {
             println("pont message")

@@ -1,4 +1,4 @@
-package su.levenetc.kbot.network
+package su.levenetc.kbot.network.http
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
