@@ -11,10 +11,10 @@ import su.levenetc.kbot.network.socket.WebSocketClient
 import su.levenetc.kbot.utils.fatalStop
 
 
-class KBot(val token: String) {
+class KBot(private val token: String) {
 
-    val httpApi = buildHttpApi()
-    lateinit var socketClient: WebSocketClient
+    private val httpApi = buildHttpApi()
+    private lateinit var socketClient: WebSocketClient
 
     init {
         if (token.isNullOrEmpty()) fatalStop("No defined Slack token")
