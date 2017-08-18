@@ -6,6 +6,8 @@ buildscript {
         verNetty = '4.1.14.Final'
         verRxJava = '2.1.2'
         verGson = '2.8.1'
+        verJUnit = '4.12'
+        verMockito = '2.8.47'
     }
     repositories {
         mavenCentral()
@@ -52,4 +54,8 @@ dependencies {
 
     //Gson
     compile "com.google.code.gson:gson:${verGson}"
+
+    //Testing
+    testCompile "junit:junit:${verJUnit}"
+    testCompile "org.mockito:mockito-core:${verMockito}"
 }
