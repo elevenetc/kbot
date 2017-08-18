@@ -3,7 +3,6 @@ package su.levenetc.kbot
 import io.reactivex.Observable
 import su.levenetc.kbot.models.Event
 import su.levenetc.kbot.models.Message
-import su.levenetc.kbot.rx.ConversationBuilder
 
 
 class Main
@@ -18,30 +17,37 @@ fun main(args: Array<String>) {
         }
 
         override fun onSuccess(eventsObservable: Observable<Event>) {
+            //,
+            //kBotObservable: KBotObservable,
+            //users: List<User>) {
             eventsObservable.filter({
                 it is Message
             }).subscribe {
                 println((it as Message).text)
             }
 
-            val con = ConversationBuilder("user")
-            con.send("message")
-                    .cancelDelay(2000)
-                    .validateResponse(ResponseValidator())
-                    .nextOnAnyResponse("optional message back", "optional message handler")
-                    .nextOnlyOn("specific message or validator", "fixing message")
-                    .thenFinish("optional message")
+
+//            con.send("message")
+//                    .cancelDelay(2000)
+//                    //.validateResponse(ResponseValidator())
+//                    .nextOnAnyResponse("optional message back", "optional message handler")
+//                    .nextOnlyOn("specific message or validator", "fixing message")
+//                    .thenFinish("optional message")
+//
+//            con.start("user-id or empty")
+//
+//            //TODO: add tree conversation
+//
+//            val pingPong = Conversation()
+//            pingPong.onMessage("ping", "optional filer: direct, mentioned")
+//                    .send("pong")
         }
 
     })
 
-
 }
 
-interface OnResponse {
-    fun handle(resp: String): String
-}
-
-interface ResponseValidator {
-
+class Node(val value: Int) {
+    var left: Node? = null
+    var right: Node? = null
 }
