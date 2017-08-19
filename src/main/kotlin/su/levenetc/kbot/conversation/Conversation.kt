@@ -14,6 +14,23 @@ class Conversation(val root: Message) {
         }
     }
 
+    fun getResponseAndSend(message: String): Conversation {
+        val next = UserMessage()
+        current.next = next
+        next.next = BotMessage(message)
+        current = next.next
+        return this
+    }
+
+    fun getResponseAndEnd(): Conversation {
+        val next = UserMessage()
+        current.next = next
+        next.next = EndMessage()
+        current = next.next
+        return this
+    }
+
+
     fun expect(validator: MessageValidator): Conversation {
         val next = UserMessage(validator)
         current.next = next

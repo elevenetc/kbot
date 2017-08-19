@@ -5,12 +5,34 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
-import su.levenetc.kbot.conversation.ConvRunner
 import su.levenetc.kbot.conversation.Conversation
+import su.levenetc.kbot.conversation.ConversationRunner
 import su.levenetc.kbot.conversation.MessageValidator
 import su.levenetc.kbot.conversation.OutBotMessagesHandler
 
 class TestConversations {
+
+    @Test
+    fun testList() {
+        val conversation = Conversation
+                .startFrom("q1")
+                .getResponseAndSend("q2")
+                .getResponseAndSend("q3")
+                .getResponseAndEnd()
+
+        val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
+        val runner = ConversationRunner(conversation, outHandler)
+
+        runner.start()
+        runner.onUserMessage("a1")
+        runner.onUserMessage("a2")
+        runner.onUserMessage("a3")
+
+        `verify`(outHandler, Mockito.atLeastOnce()).send("q1")
+        `verify`(outHandler, Mockito.atLeastOnce()).send("q2")
+        `verify`(outHandler, Mockito.atLeastOnce()).send("q3")
+    }
+
     @Test
     fun testPingPong() {
 
@@ -19,7 +41,7 @@ class TestConversations {
                 .respondWith("pong")
                 .end()
         val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
-        val runner = ConvRunner(conversation, outHandler)
+        val runner = ConversationRunner(conversation, outHandler)
 
         runner.start()
         runner.onUserMessage("ping")
@@ -40,7 +62,7 @@ class TestConversations {
                 .end()
 
         val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
-        val runner = ConvRunner(conversation, outHandler)
+        val runner = ConversationRunner(conversation, outHandler)
 
         runner.start()
         runner.onUserMessage("1")
