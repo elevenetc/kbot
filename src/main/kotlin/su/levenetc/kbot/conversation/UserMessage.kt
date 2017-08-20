@@ -1,6 +1,6 @@
 package su.levenetc.kbot.conversation
 
-class UserMessage() : Message() {
+open class UserMessage() : Message() {
     constructor(message: String) : this() {
         this.message = message
     }

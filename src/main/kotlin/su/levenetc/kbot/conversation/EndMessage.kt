@@ -1,8 +1,8 @@
 package su.levenetc.kbot.conversation
 
-class EndMessage : Message() {
+class EndMessage(message: String = "") : Message(message) {
     init {
-        next = this
+
     }
 }
 

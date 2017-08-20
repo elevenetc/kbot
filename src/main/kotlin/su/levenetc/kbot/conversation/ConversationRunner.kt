@@ -1,9 +1,9 @@
 package su.levenetc.kbot.conversation
 
-class ConversationRunner(conversation: Conversation,
+class ConversationRunner(root: Message,
                          private val outBotMessagesHandler: OutBotMessagesHandler) {
 
-    var current: Message = conversation.root
+    var current: Message = root
     var isFinished: Boolean = false
 
     fun start() {
@@ -24,9 +24,12 @@ class ConversationRunner(conversation: Conversation,
         val currentMessage = current as UserMessage
         if (currentMessage.validator.isValid(message)) {
 
+            val nextIndex = current.condition.getIndex(message)
+            val next = current.next[nextIndex]
+
             //handle user message(store?)
 
-            moveToNext()
+            moveToNext(next)
         } else {
             val errorMessage = currentMessage.validator.onError(message)
             if (errorMessage.isNotEmpty())
@@ -34,17 +37,30 @@ class ConversationRunner(conversation: Conversation,
         }
     }
 
-    private fun moveToNext() {
+    private fun moveToNext(next: Message) {
         if (!isFinished) {
-            current = current.next
-            if (current is EndMessage) isFinished = true
-            else if (current is BotMessage) triggerBotMessage()
+
+            current = next
+
+            if (current is EndMessage) {
+                isFinished = true
+                sendEndMessageIfExists()
+            } else if (current is BotMessage) {
+                triggerBotMessage()
+            }
+        }
+    }
+
+    private fun sendEndMessageIfExists() {
+        val endMessage = current as EndMessage
+        if (endMessage.message.isNotEmpty()) {
+            outBotMessagesHandler.send(endMessage.message)
         }
     }
 
     private fun triggerBotMessage() {
         outBotMessagesHandler.send(current.message)
-        moveToNext()
+        moveToNext(current.next[0])
     }
 
 }
