@@ -1,54 +1,66 @@
 package su.levenetc.kbot.conversation
 
-class Conversation(val root: Message) {
+class Conversation(root: Message,
+                   private val outBotMessagesHandler: OutBotMessagesHandler) {
 
     var current: Message = root
+    var isFinished: Boolean = false
 
-    companion object {
-        fun waitFor(message: String): Conversation {
-            return Conversation(UserMessage(message))
-        }
+    fun start() {
+        if (current is BotMessage)
+            triggerBotMessage()
+    }
 
-        fun initWith(message: String): Conversation {
-            return Conversation(BotMessage(message))
+    fun onUserMessage(message: String) {
+        if (isFinished) return
+        if (current is UserMessage) {
+            handleUserMessageAndMoveToNext(message)
+        } else {
+            throw RuntimeException("invalid state. bot message is expected: " + current)
         }
     }
 
-//    fun getResponseAndSend(message: String): Conversation {
-//        val next = UserMessage()
-//        current.next.add(next)
-//        next.next.add(BotMessage(message))
-//        current = next.next
-//        return this
-//    }
-//
-//    fun getResponseAndEnd(): Conversation {
-//        val next = UserMessage()
-//        current.next = next
-//        next.next = EndMessage()
-//        current = next.next
-//        return this
-//    }
-//
-//
-//    fun expect(validator: MessageValidator): Conversation {
-//        val next = UserMessage(validator)
-//        current.next.add(next)
-//        current = next
-//        return this
-//    }
-//
-//    fun respondWith(message: String): Conversation {
-//        val next = BotMessage(message)
-//        current.next.add(next)
-//        current = next
-//        return this
-//    }
-//
-//    fun end(): Conversation {
-//        current.next.add(EndMessage())
-//        return this
-//    }
+    private fun handleUserMessageAndMoveToNext(message: String) {
+        val currentMessage = current as UserMessage
+        if (currentMessage.validator.isValid(message)) {
 
+            val nextIndex = current.condition.getIndex(message)
+            val next = current.next[nextIndex]
+
+            //handle user message(store?)
+
+            moveToNext(next)
+        } else {
+            val errorMessage = currentMessage.validator.onError(message)
+            if (errorMessage.isNotEmpty())
+                outBotMessagesHandler.send(errorMessage)
+        }
+    }
+
+    private fun moveToNext(next: Message) {
+        if (!isFinished) {
+
+            current = next
+
+            if (current is EndMessage) {
+                isFinished = true
+                sendEndMessageIfExists()
+            } else if (current is BotMessage) {
+                triggerBotMessage()
+            }
+        }
+    }
+
+    private fun sendEndMessageIfExists() {
+        val endMessage = current as EndMessage
+        if (endMessage.message.isNotEmpty()) {
+            outBotMessagesHandler.send(endMessage.message)
+        }
+    }
+
+    private fun triggerBotMessage() {
+        outBotMessagesHandler.send(current.message)
+        moveToNext(current.next[0])
+    }
 
 }
