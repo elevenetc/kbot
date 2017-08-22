@@ -5,31 +5,51 @@ class Conversation(root: Message,
 
     var current: Message = root
     var isFinished: Boolean = false
+    var multipleUserVariants: Boolean = false
 
     fun start() {
         if (current is BotMessage)
             triggerBotMessage()
     }
 
-    fun onUserMessage(message: String) {
+    fun onUserMessage(msg: String) {
         if (isFinished) return
-        if (current is UserMessage) {
-            handleUserMessageAndMoveToNext(message)
+
+        if (multipleUserVariants) {
+
+            for (message in current.next) {
+                if (message.validator.isValid(msg)) {
+                    current = message
+                    multipleUserVariants = false
+                    handleUserMessageAndMoveToNext(msg)
+                    return
+                }
+            }
+
+            println("not handled message: $msg!")
+
         } else {
-            throw RuntimeException("invalid state. bot message is expected: " + current)
+            if (current is UserMessage) {
+                handleUserMessageAndMoveToNext(msg)
+            } else {
+                throw RuntimeException("invalid state. bot msg is expected: " + current)
+            }
         }
+
+
     }
 
     private fun handleUserMessageAndMoveToNext(message: String) {
         val currentMessage = current as UserMessage
         if (currentMessage.validator.isValid(message)) {
 
-            val nextIndex = current.condition.getIndex(message)
-            val next = current.next[nextIndex]
+            //val nextIndex = current.condition.getIndex(message)
+            val botMessage = current.next[0]
+            (botMessage as BotMessage).userMessage = message
 
             //handle user message(store?)
 
-            moveToNext(next)
+            moveToNext(botMessage)
         } else {
             val errorMessage = currentMessage.validator.onError(message)
             if (errorMessage.isNotEmpty())
@@ -60,7 +80,12 @@ class Conversation(root: Message,
 
     private fun triggerBotMessage() {
         outBotMessagesHandler.send(current.message)
-        moveToNext(current.next[0])
+        if (current.next.size == 1) {
+            multipleUserVariants = false
+            moveToNext(current.next[0])
+        } else {
+            multipleUserVariants = true
+        }
     }
 
 }

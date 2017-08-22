@@ -19,7 +19,7 @@ class TestConversations {
                 .then(anyUserMessage()
                         .then(BotMessage(q2)
                                 .then(anyUserMessage()
-                                        .then(EndMessage(endMessage)))))
+                                        .thenLast(endMessage))))
 
         val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
@@ -59,20 +59,85 @@ class TestConversations {
 
     @Test
     fun testPingPong() {
-        val userMessage = "ping"
-        val botMessage = "pong"
+        val pingMessage = "ping"
+        val pongMessage = "pong"
 
-        val model = waitForUserMessage(userMessage)
-                .thenLast(botMessage)
+        val model = waitForUserMessage(pingMessage)
+                .thenLast(pongMessage)
 
         val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
 
         conversation.start()
-        conversation.onUserMessage(userMessage)
+        conversation.onUserMessage(pingMessage)
 
-        Mockito.verify(outHandler).send(botMessage)
+        Mockito.verify(outHandler).send(pongMessage)
         assertTrue(conversation.isFinished)
+    }
+
+    @Test
+    fun testTree() {
+
+        val model = initFromBotMessage("Are you X or Y?")
+                .thenOneOf(
+                        UserMessage("X")
+                                .then(
+                                        BotMessage("Hello X. Are you older than 50?")
+                                                .thenOneOf(
+                                                        positiveMessage().thenLast("That's bad! Bye X!"),
+                                                        negativeMessage().thenLast("You're lucky! Good bye X!")
+                                                )
+                                ),
+                        UserMessage("Y")
+                                .then(
+                                        BotMessage("Hello Y. Do you like Z?")
+                                                .thenOneOf(
+                                                        positiveMessage()
+                                                                .then(
+                                                                        BotMessage("Do you want to buy Z?")
+                                                                                .thenOneOf(
+                                                                                        positiveMessage().thenLast("Cool! I'll send you email! Bye!"),
+                                                                                        negativeMessage().thenLast("No problem! Bye!")
+                                                                                )
+                                                                ),
+                                                        negativeMessage().thenLast("Cool. Good bye Y!"))
+
+                                )
+                )
+
+        val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
+        val conversation = Conversation(model, outHandler)
+
+        conversation.start()
+        conversation.onUserMessage("Y")
+        conversation.onUserMessage("yes")
+        conversation.onUserMessage("no")
+
+        Mockito.verify(outHandler).send("No problem! Bye!")
+        assertTrue(conversation.isFinished)
+    }
+
+    @Test
+    fun testNoValidVariants() {
+
+        val q1 = "What time is it now?"
+        val q2 = "How old are you?"
+        val a1 = "10:00"
+        val a2 = "50"
+        val a3 = "Have no idea, sorry"
+
+        waitForUserMessage(anyUserMessage())
+                .thenLast(BotMessage(object : MessageHandler {
+                    override fun get(userMessage: String): String {
+                        if (userMessage == q1) {
+                            return a1
+                        } else if (userMessage == q2) {
+                            return a2
+                        } else {
+                            return a3
+                        }
+                    }
+                }))
     }
 
     class OnePlusOneValidator(private val invalidMessage: String) : MessageValidator {

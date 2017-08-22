@@ -3,24 +3,29 @@ package su.levenetc.kbot.conversation
 import java.util.*
 
 open class Message(
-        var message: String = "",
+        open var message: String = "",
         var validator: MessageValidator = EmptyMessageValidator()
 ) {
 
-    lateinit var condition: Condition
+    //lateinit var condition: Condition
     val next: LinkedList<Message> = LinkedList()
 
     fun thenLast(message: String): Message {
         val endMessage = EndMessage(message)
         next.add(endMessage)
-        condition = OneSelection()
+        //condition = OneSelection()
         return this
     }
 
-    fun then(vararg nodes: Message, condition: Condition = OneSelection()): Message {
-
-        this.condition = condition
+    fun thenOneOf(vararg nodes: Message): Message {
         Collections.addAll<Message>(next, *nodes)
         return this
     }
+
+    fun then(node: Message): Message {
+        next.add(node)
+        return this
+    }
+
+
 }
