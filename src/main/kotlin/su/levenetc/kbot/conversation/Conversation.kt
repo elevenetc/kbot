@@ -1,8 +1,9 @@
 package su.levenetc.kbot.conversation
 
 class Conversation(root: Message,
-                   private val outBotMessagesHandler: OutBotMessagesHandler) {
+                   private val outMessagesHandler: OutMessagesHandler) {
 
+    var userId: String = ""
     private var current: Message = root
     var isFinished: Boolean = false
     private var multipleUserVariants: Boolean = false
@@ -50,7 +51,7 @@ class Conversation(root: Message,
         } else {
             val errorMessage = currentMessage.validator.onError(message)
             if (errorMessage.isNotEmpty())
-                outBotMessagesHandler.send(errorMessage)
+                outMessagesHandler.send(errorMessage)
         }
     }
 
@@ -71,12 +72,12 @@ class Conversation(root: Message,
     private fun sendEndMessageIfExists() {
         val endMessage = current as EndMessage
         if (endMessage.message.isNotEmpty()) {
-            outBotMessagesHandler.send(endMessage.message)
+            outMessagesHandler.send(endMessage.message)
         }
     }
 
     private fun triggerBotMessage() {
-        outBotMessagesHandler.send(current.message)
+        outMessagesHandler.send(current.message)
         if (current.next.size == 1) {
             multipleUserVariants = false
             moveToNext(current.next[0])

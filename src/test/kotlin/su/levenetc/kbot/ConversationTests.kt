@@ -9,11 +9,11 @@ import su.levenetc.kbot.conversation.*
 
 class ConversationTests {
 
-    private lateinit var outHandler: OutBotMessagesHandler
+    private lateinit var outHandler: OutMessagesHandler
 
     @Before
     fun before() {
-        outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
+        outHandler = Mockito.mock(OutMessagesHandler::class.java)
     }
 
     @Test
@@ -48,7 +48,7 @@ class ConversationTests {
                                 .then(anyUserMessage()
                                         .andFinish(endMessage))))
 
-        val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
+        val outHandler = Mockito.mock(OutMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
         conversation.start()
         conversation.onUserMessage("Hi! Nice!")
@@ -70,7 +70,7 @@ class ConversationTests {
                                 .andFinish("Congrats!")
                 )
 
-        val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
+        val outHandler = Mockito.mock(OutMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
 
         conversation.start()
@@ -92,7 +92,7 @@ class ConversationTests {
         val model = waitForUserMessage(pingMessage)
                 .andFinish(pongMessage)
 
-        val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
+        val outHandler = Mockito.mock(OutMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
 
         conversation.start()
@@ -131,7 +131,7 @@ class ConversationTests {
                                 )
                 )
 
-        val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
+        val outHandler = Mockito.mock(OutMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
 
         conversation.start()

@@ -1,5 +1,5 @@
 package su.levenetc.kbot.conversation
 
-interface OutBotMessagesHandler {
+interface OutMessagesHandler {
     fun send(message: String)
 }

@@ -1,6 +1,10 @@
 package su.levenetc.kbot
 
+import com.google.gson.Gson
 import io.reactivex.Observable
+import su.levenetc.kbot.conversation.Conversation
+import su.levenetc.kbot.conversation.OutMessagesHandler
+import su.levenetc.kbot.conversation.waitForUserMessage
 import su.levenetc.kbot.models.Event
 import su.levenetc.kbot.models.Message
 
@@ -16,14 +20,25 @@ fun main(args: Array<String>) {
 
         }
 
-        override fun onSuccess(eventsObservable: Observable<Event>) {
+        override fun onSuccess(eventsObservable: Observable<Event>, writer: KBot.Writer) {
             //,
             //kBotObservable: KBotObservable,
             //users: List<User>) {
+
+            val model = waitForUserMessage("ping").andFinish("pong")
+            var conversation: Conversation? = null
+
             eventsObservable.filter({
                 it is Message
             }).subscribe {
-                println((it as Message).text)
+
+                val message = it as Message
+
+                if (conversation == null) {
+                    conversation = Conversation(model, SlackOutMessageHandler(message.user, message.channel, writer))
+                }
+
+                conversation?.onUserMessage(message.text)
             }
 
 
@@ -45,6 +60,25 @@ fun main(args: Array<String>) {
 
     })
 
+}
+
+class SlackOutMessageHandler(
+        val userId: String,
+        val channgelId: String,
+        val writer: KBot.Writer
+) : OutMessagesHandler {
+
+    val gson: Gson = Gson()
+    var messageId: Int = -1
+
+    override fun send(message: String) {
+        messageId++
+        writer.write(gson.toJson(SlackOutMessage(messageId, message, channgelId)))
+    }
+}
+
+class SlackOutMessage(val id: Int, val text: String, val channel: String) {
+    val type: String = "message"
 }
 
 class Node(val value: Int) {

@@ -17,7 +17,7 @@ class KBot(private val token: String) {
     private lateinit var socketClient: WebSocketClient
 
     init {
-        if (token.isNullOrEmpty()) fatalStop("No defined Slack token")
+        if (token.isEmpty()) fatalStop("No defined Slack token")
     }
 
     fun start(callBack: InitCallback) {
@@ -32,10 +32,13 @@ class KBot(private val token: String) {
 
                 if (rtmState != null) {
                     println(rtmState.url)
-//                    WebSocketClient("wss://echo.websocket.org").connect()
                     socketClient = WebSocketClient(rtmState.url)
                     socketClient.connect()
-                    callBack.onSuccess(socketClient.eventsObservable())
+                    callBack.onSuccess(socketClient.eventsObservable(), object : Writer {
+                        override fun write(msg: String) {
+                            socketClient.write(msg)
+                        }
+                    })
                 }
 
 
@@ -46,7 +49,11 @@ class KBot(private val token: String) {
 
     interface InitCallback {
         fun onError()
-        fun onSuccess(eventsObservable: Observable<Event>)
+        fun onSuccess(eventsObservable: Observable<Event>, writer: Writer)
+    }
+
+    interface Writer {
+        fun write(msg: String)
     }
 
 }

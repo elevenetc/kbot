@@ -29,7 +29,14 @@ class WebSocketClient(val uri: String) {
         val bootstrap = Bootstrap()
         val uri: URI = URI.create(uri)
         val handler = WebSocketClientHandler(
-                WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 1280000),
+                WebSocketClientHandshakerFactory.newHandshaker(
+                        uri,
+                        WebSocketVersion.V13,
+                        null,
+                        false,
+                        EmptyHttpHeaders.INSTANCE,
+                        1280000
+                ),
                 eventsParser
         )
 
@@ -56,7 +63,7 @@ class WebSocketClient(val uri: String) {
         ch.closeFuture().sync()
     }
 
-    fun eval(text: String) {
+    fun write(text: String) {
         ch.writeAndFlush(TextWebSocketFrame(text))
     }
 
