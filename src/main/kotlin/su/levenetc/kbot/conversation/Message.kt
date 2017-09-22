@@ -30,5 +30,9 @@ open class Message(
         return this
     }
 
+    fun build(): ConversationModel {
+        return ConversationModel(this)
+    }
+
 
 }

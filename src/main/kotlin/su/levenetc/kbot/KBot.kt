@@ -4,7 +4,10 @@ import io.reactivex.Observable
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import su.levenetc.kbot.conversation.Conversation
+import su.levenetc.kbot.conversation.ConversationModel
 import su.levenetc.kbot.models.Event
+import su.levenetc.kbot.models.Message
 import su.levenetc.kbot.models.RtmState
 import su.levenetc.kbot.network.http.buildHttpApi
 import su.levenetc.kbot.network.socket.WebSocketClient
@@ -45,6 +48,36 @@ class KBot(private val token: String) {
             }
 
         })
+    }
+
+    class ConversationCallback(private val model: ConversationModel) : InitCallback {
+
+        private val userConversations = mutableMapOf<String, Conversation>()
+
+        override fun onError() {
+
+        }
+
+        override fun onSuccess(eventsObservable: Observable<Event>, writer: Writer) {
+            eventsObservable.filter({
+                it is Message
+            }).subscribe {
+
+                val message = it as Message
+                val userId = message.user
+                val conversation: Conversation
+
+                conversation = if (userConversations.containsKey(userId)) {
+                    userConversations.getValue(userId)
+                } else {
+                    Conversation(model, SlackOutMessageHandler(userId, message.channel, writer))
+                }
+
+                conversation.onUserMessage(message.text)
+                if (conversation.isFinished) userConversations.remove(userId)
+            }
+        }
+
     }
 
     interface InitCallback {

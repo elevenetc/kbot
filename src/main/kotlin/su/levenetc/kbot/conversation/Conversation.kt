@@ -1,12 +1,11 @@
 package su.levenetc.kbot.conversation
 
-class Conversation(root: Message,
+class Conversation(conversationModel: ConversationModel,
                    private val outMessagesHandler: OutMessagesHandler) {
 
-    var userId: String = ""
-    private var current: Message = root
-    var isFinished: Boolean = false
+    private var current: Message = conversationModel.rootMessage
     private var multipleUserVariants: Boolean = false
+    var isFinished: Boolean = false
 
     fun start(): Conversation {
         if (current is BotMessage)

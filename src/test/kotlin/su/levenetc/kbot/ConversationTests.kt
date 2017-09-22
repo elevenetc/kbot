@@ -18,7 +18,7 @@ class ConversationTests {
 
     @Test
     fun simpleBotMessage() {
-        val model = initFromBotMessage(hello).andFinish()
+        val model = initFromBotMessage(hello).andFinish().build()
         val conversation = Conversation(model, outHandler)
 
         assertTrue(conversation.start().isFinished)
@@ -27,7 +27,7 @@ class ConversationTests {
 
     @Test
     fun simpleUserMessage() {
-        val model = waitForUserMessage(hello).andFinish()
+        val model = waitForUserMessage(hello).andFinish().build()
         val conversation = Conversation(model, outHandler)
 
         assertTrue(
@@ -46,7 +46,7 @@ class ConversationTests {
                 .then(anyUserMessage()
                         .then(BotMessage(q2)
                                 .then(anyUserMessage()
-                                        .andFinish(endMessage))))
+                                        .andFinish(endMessage)))).build()
 
         val outHandler = Mockito.mock(OutMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
@@ -69,6 +69,7 @@ class ConversationTests {
                         UserMessage(OnePlusOneValidator(invalidMessage))
                                 .andFinish("Congrats!")
                 )
+                .build()
 
         val outHandler = Mockito.mock(OutMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
@@ -91,6 +92,7 @@ class ConversationTests {
 
         val model = waitForUserMessage(pingMessage)
                 .andFinish(pongMessage)
+                .build()
 
         val outHandler = Mockito.mock(OutMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
@@ -130,6 +132,7 @@ class ConversationTests {
                                                         negativeMessage().andFinish("Cool. Good bye Y!"))
                                 )
                 )
+                .build()
 
         val outHandler = Mockito.mock(OutMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
