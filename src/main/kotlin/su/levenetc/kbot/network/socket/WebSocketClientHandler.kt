@@ -47,19 +47,19 @@ class WebSocketClientHandler(
         }
 
         val frame = msg as WebSocketFrame
-        if (frame is TextWebSocketFrame) {
-            val text = frame.text()
-            eventsParser.handleMessage(text)
-            println("text message: $text")
-        } else if (frame is PongWebSocketFrame) {
-            println("pont message")
-        } else if (frame is CloseWebSocketFrame) {
-            ch.close()
-        } else if (frame is PingWebSocketFrame) {
-            frame.content().retain()
-            ctx.channel().writeAndFlush(PongWebSocketFrame(frame.content()))
-        } else {
-            println("unhandled frame: $frame")
+        when (frame) {
+            is TextWebSocketFrame -> {
+                val text = frame.text()
+                eventsParser.handleMessage(text)
+                println("text message: $text")
+            }
+            is PongWebSocketFrame -> println("pont message")
+            is CloseWebSocketFrame -> ch.close()
+            is PingWebSocketFrame -> {
+                frame.content().retain()
+                ctx.channel().writeAndFlush(PongWebSocketFrame(frame.content()))
+            }
+            else -> println("unhandled frame: $frame")
         }
     }
 

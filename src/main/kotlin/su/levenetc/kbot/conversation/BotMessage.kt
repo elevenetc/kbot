@@ -2,15 +2,10 @@ package su.levenetc.kbot.conversation
 
 class BotMessage : Message {
 
-    var userMessage: String = ""
     private val messageHandler: MessageHandler
 
     constructor(msg: String) : super(msg) {
         messageHandler = StaticMessageHandler(msg)
-    }
-
-    constructor(messageHandler: MessageHandler) : super("") {
-        this.messageHandler = messageHandler
     }
 
     override var message: String

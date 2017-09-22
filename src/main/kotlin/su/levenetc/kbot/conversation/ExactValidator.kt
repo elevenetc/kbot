@@ -2,7 +2,7 @@ package su.levenetc.kbot.conversation
 
 class ExactValidator(
         private val target: String,
-        val errorMessage: String = "") : MessageValidator {
+        private val errorMessage: String = "") : MessageValidator {
 
     override fun isValid(message: String): Boolean {
         return target == message

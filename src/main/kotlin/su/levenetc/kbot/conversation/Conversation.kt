@@ -3,17 +3,18 @@ package su.levenetc.kbot.conversation
 class Conversation(root: Message,
                    private val outBotMessagesHandler: OutBotMessagesHandler) {
 
-    var current: Message = root
+    private var current: Message = root
     var isFinished: Boolean = false
-    var multipleUserVariants: Boolean = false
+    private var multipleUserVariants: Boolean = false
 
-    fun start() {
+    fun start(): Conversation {
         if (current is BotMessage)
             triggerBotMessage()
+        return this
     }
 
-    fun onUserMessage(msg: String) {
-        if (isFinished) return
+    fun onUserMessage(msg: String): Conversation {
+        if (isFinished) return this
 
         if (multipleUserVariants) {
 
@@ -22,7 +23,7 @@ class Conversation(root: Message,
                     current = message
                     multipleUserVariants = false
                     handleUserMessageAndMoveToNext(msg)
-                    return
+                    return this
                 }
             }
 
@@ -36,26 +37,15 @@ class Conversation(root: Message,
             }
         }
 
-
+        return this
     }
 
     private fun handleUserMessageAndMoveToNext(message: String) {
         val currentMessage = current as UserMessage
         if (currentMessage.validator.isValid(message)) {
 
-            //val nextIndex = current.condition.getIndex(message)
             val nextMessage = current.next[0]
-
             moveToNext(nextMessage)
-
-//            if (nextMessage is BotMessage) {
-//                moveToNext(nextMessage)
-//            } else if (nextMessage is EndMessage) {
-//
-//            }
-
-            //(nextMessage as BotMessage).userMessage = message
-            //handle user message(store?)
 
         } else {
             val errorMessage = currentMessage.validator.onError(message)

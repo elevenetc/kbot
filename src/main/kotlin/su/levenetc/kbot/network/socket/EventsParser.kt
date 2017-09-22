@@ -7,7 +7,7 @@ import su.levenetc.kbot.models.Message
 
 class EventsParser {
 
-    val gson = Gson()
+    private val gson = Gson()
     val publishSubject = PublishSubject.create<Event>()!!
 
     fun handleMessage(message: String) {

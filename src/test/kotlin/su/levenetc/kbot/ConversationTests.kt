@@ -7,8 +7,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import su.levenetc.kbot.conversation.*
 
-class TestConversations {
-
+class ConversationTests {
 
     private lateinit var outHandler: OutBotMessagesHandler
 
@@ -20,12 +19,10 @@ class TestConversations {
     @Test
     fun simpleBotMessage() {
         val model = initFromBotMessage(hello).andFinish()
-
         val conversation = Conversation(model, outHandler)
 
-        conversation.start()
+        assertTrue(conversation.start().isFinished)
         Mockito.verify(outHandler).send(hello)
-        assertTrue(conversation.isFinished)
     }
 
     @Test
@@ -33,9 +30,9 @@ class TestConversations {
         val model = waitForUserMessage(hello).andFinish()
         val conversation = Conversation(model, outHandler)
 
-        conversation.start()
-        conversation.onUserMessage(hello)
-        assertTrue(conversation.isFinished)
+        assertTrue(
+                conversation.start().onUserMessage(hello).isFinished
+        )
     }
 
     @Test
@@ -131,7 +128,6 @@ class TestConversations {
                                                                                 )
                                                                 ),
                                                         negativeMessage().andFinish("Cool. Good bye Y!"))
-
                                 )
                 )
 
@@ -145,29 +141,6 @@ class TestConversations {
 
         Mockito.verify(outHandler).send("No problem! Bye!")
         assertTrue(conversation.isFinished)
-    }
-
-    @Test
-    fun testNoValidVariants() {
-
-        val q1 = "What time is it now?"
-        val q2 = "How old are you?"
-        val a1 = "10:00"
-        val a2 = "50"
-        val a3 = "Have no idea, sorry"
-
-//        waitForUserMessage(anyUserMessage())
-//                .andFinish(BotMessage(object : MessageHandler {
-//                    override fun get(userMessage: String): String {
-//                        if (userMessage == q1) {
-//                            return a1
-//                        } else if (userMessage == q2) {
-//                            return a2
-//                        } else {
-//                            return a3
-//                        }
-//                    }
-//                }))
     }
 
     class OnePlusOneValidator(private val invalidMessage: String) : MessageValidator {
