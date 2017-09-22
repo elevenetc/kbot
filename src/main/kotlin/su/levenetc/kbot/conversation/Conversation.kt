@@ -44,12 +44,19 @@ class Conversation(root: Message,
         if (currentMessage.validator.isValid(message)) {
 
             //val nextIndex = current.condition.getIndex(message)
-            val botMessage = current.next[0]
-            (botMessage as BotMessage).userMessage = message
+            val nextMessage = current.next[0]
 
+            moveToNext(nextMessage)
+
+//            if (nextMessage is BotMessage) {
+//                moveToNext(nextMessage)
+//            } else if (nextMessage is EndMessage) {
+//
+//            }
+
+            //(nextMessage as BotMessage).userMessage = message
             //handle user message(store?)
 
-            moveToNext(botMessage)
         } else {
             val errorMessage = currentMessage.validator.onError(message)
             if (errorMessage.isNotEmpty())

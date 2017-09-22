@@ -10,7 +10,13 @@ open class Message(
     //lateinit var condition: Condition
     val next: LinkedList<Message> = LinkedList()
 
-    fun thenLast(message: String): Message {
+    fun andFinish(): Message {
+        next.add(EndMessage())
+        //condition = OneSelection()
+        return this
+    }
+
+    fun andFinish(message: String): Message {
         val endMessage = EndMessage(message)
         next.add(endMessage)
         //condition = OneSelection()

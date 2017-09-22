@@ -2,11 +2,41 @@ package su.levenetc.kbot
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import su.levenetc.kbot.conversation.*
 
 class TestConversations {
+
+
+    private lateinit var outHandler: OutBotMessagesHandler
+
+    @Before
+    fun before() {
+        outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
+    }
+
+    @Test
+    fun simpleBotMessage() {
+        val model = initFromBotMessage(hello).andFinish()
+
+        val conversation = Conversation(model, outHandler)
+
+        conversation.start()
+        Mockito.verify(outHandler).send(hello)
+        assertTrue(conversation.isFinished)
+    }
+
+    @Test
+    fun simpleUserMessage() {
+        val model = waitForUserMessage(hello).andFinish()
+        val conversation = Conversation(model, outHandler)
+
+        conversation.start()
+        conversation.onUserMessage(hello)
+        assertTrue(conversation.isFinished)
+    }
 
     @Test
     fun testList() {
@@ -19,7 +49,7 @@ class TestConversations {
                 .then(anyUserMessage()
                         .then(BotMessage(q2)
                                 .then(anyUserMessage()
-                                        .thenLast(endMessage))))
+                                        .andFinish(endMessage))))
 
         val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
@@ -40,7 +70,7 @@ class TestConversations {
         val model = initFromBotMessage(question)
                 .then(
                         UserMessage(OnePlusOneValidator(invalidMessage))
-                                .thenLast("Congrats!")
+                                .andFinish("Congrats!")
                 )
 
         val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
@@ -63,7 +93,7 @@ class TestConversations {
         val pongMessage = "pong"
 
         val model = waitForUserMessage(pingMessage)
-                .thenLast(pongMessage)
+                .andFinish(pongMessage)
 
         val outHandler = Mockito.mock(OutBotMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
@@ -84,8 +114,8 @@ class TestConversations {
                                 .then(
                                         BotMessage("Hello X. Are you older than 50?")
                                                 .thenOneOf(
-                                                        positiveMessage().thenLast("That's bad! Bye X!"),
-                                                        negativeMessage().thenLast("You're lucky! Good bye X!")
+                                                        positiveMessage().andFinish("That's bad! Bye X!"),
+                                                        negativeMessage().andFinish("You're lucky! Good bye X!")
                                                 )
                                 ),
                         UserMessage("Y")
@@ -96,11 +126,11 @@ class TestConversations {
                                                                 .then(
                                                                         BotMessage("Do you want to buy Z?")
                                                                                 .thenOneOf(
-                                                                                        positiveMessage().thenLast("Cool! I'll send you email! Bye!"),
-                                                                                        negativeMessage().thenLast("No problem! Bye!")
+                                                                                        positiveMessage().andFinish("Cool! I'll send you email! Bye!"),
+                                                                                        negativeMessage().andFinish("No problem! Bye!")
                                                                                 )
                                                                 ),
-                                                        negativeMessage().thenLast("Cool. Good bye Y!"))
+                                                        negativeMessage().andFinish("Cool. Good bye Y!"))
 
                                 )
                 )
@@ -126,18 +156,18 @@ class TestConversations {
         val a2 = "50"
         val a3 = "Have no idea, sorry"
 
-        waitForUserMessage(anyUserMessage())
-                .thenLast(BotMessage(object : MessageHandler {
-                    override fun get(userMessage: String): String {
-                        if (userMessage == q1) {
-                            return a1
-                        } else if (userMessage == q2) {
-                            return a2
-                        } else {
-                            return a3
-                        }
-                    }
-                }))
+//        waitForUserMessage(anyUserMessage())
+//                .andFinish(BotMessage(object : MessageHandler {
+//                    override fun get(userMessage: String): String {
+//                        if (userMessage == q1) {
+//                            return a1
+//                        } else if (userMessage == q2) {
+//                            return a2
+//                        } else {
+//                            return a3
+//                        }
+//                    }
+//                }))
     }
 
     class OnePlusOneValidator(private val invalidMessage: String) : MessageValidator {
