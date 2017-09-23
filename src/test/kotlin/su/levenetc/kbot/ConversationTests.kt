@@ -1,7 +1,6 @@
 package su.levenetc.kbot
 
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
@@ -134,7 +133,6 @@ class ConversationTests {
                 )
                 .build()
 
-        val outHandler = Mockito.mock(OutMessagesHandler::class.java)
         val conversation = Conversation(model, outHandler)
 
         conversation.start()
@@ -144,6 +142,46 @@ class ConversationTests {
 
         Mockito.verify(outHandler).send("No problem! Bye!")
         assertTrue(conversation.isFinished)
+    }
+
+    @Test
+    fun testSimpleSurveyReport() {
+        val model = initFromBotMessage(howAreYou)
+                .then(
+                        anyUserMessage()
+                                .andFinish(okBye)
+                )
+                .build()
+
+        val conversation = Conversation(model, outHandler)
+        conversation.start()
+        conversation.onUserMessage(fine)
+
+        assertEquals(howAreYou, conversation.log[0].message)
+        assertEquals(fine, conversation.log[1].message)
+        assertEquals(okBye, conversation.log[2].message)
+    }
+
+    @Test
+    fun testTreeSurveyReport() {
+        val model = initFromBotMessage(aOrB)
+                .thenOneOf(
+                        message(a).andFinish(endA),
+                        message(b).andFinish(endB)
+                ).build()
+
+        val conversation = Conversation(model, outHandler)
+        conversation.start()
+        conversation.onUserMessage(a)
+
+        assertEquals(aOrB, conversation.log[0].message)
+        assertEquals(a, conversation.log[1].message)
+        assertEquals(endA, conversation.log[2].message)
+    }
+
+    @Test
+    fun testTaskOnMessage() {
+        //TODO: add task on message test
     }
 
     class OnePlusOneValidator(private val invalidMessage: String) : MessageValidator {

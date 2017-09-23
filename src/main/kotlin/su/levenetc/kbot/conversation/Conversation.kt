@@ -3,54 +3,62 @@ package su.levenetc.kbot.conversation
 class Conversation(conversationModel: ConversationModel,
                    private val outMessagesHandler: OutMessagesHandler) {
 
+    private var root: Message = conversationModel.rootMessage
     private var current: Message = conversationModel.rootMessage
     private var multipleUserVariants: Boolean = false
+    var log = mutableListOf<LogMessage>()
     var isFinished: Boolean = false
 
     fun start(): Conversation {
-        if (current is BotMessage)
-            triggerBotMessage()
+        if (current is BotMessage) triggerBotMessage()
         return this
     }
 
-    fun onUserMessage(msg: String): Conversation {
+
+    fun onUserMessage(message: String): Conversation {
         if (isFinished) return this
 
         if (multipleUserVariants) {
 
-            for (message in current.next) {
-                if (message.validator.isValid(msg)) {
-                    current = message
+            for (msg in current.next) {
+                if (msg.validator.isValid(message)) {
+                    current = msg
                     multipleUserVariants = false
-                    handleUserMessageAndMoveToNext(msg)
+                    handleUserMessageAndMoveToNext(message)
                     return this
                 }
             }
 
-            println("not handled message: $msg!")
+            //TODO: add logging
+            println("not handled message: $message!")
 
         } else {
             if (current is UserMessage) {
-                handleUserMessageAndMoveToNext(msg)
+                handleUserMessageAndMoveToNext(message)
             } else {
-                throw RuntimeException("invalid state. bot msg is expected: " + current)
+                throw RuntimeException("invalid state. bot message is expected: " + current)
             }
         }
 
         return this
     }
 
+    /**
+     * Checks message with validator
+     * and moves to next in case of success.
+     * Otherwise sends bot error message if defined
+     */
     private fun handleUserMessageAndMoveToNext(message: String) {
         val currentMessage = current as UserMessage
         if (currentMessage.validator.isValid(message)) {
 
             val nextMessage = current.next[0]
+            logUserMessage(message)
             moveToNext(nextMessage)
 
         } else {
             val errorMessage = currentMessage.validator.onError(message)
-            if (errorMessage.isNotEmpty())
-                outMessagesHandler.send(errorMessage)
+            if (errorMessage.isNotEmpty()) sendBotMessage(errorMessage)
         }
     }
 
@@ -71,18 +79,31 @@ class Conversation(conversationModel: ConversationModel,
     private fun sendEndMessageIfExists() {
         val endMessage = current as EndMessage
         if (endMessage.message.isNotEmpty()) {
-            outMessagesHandler.send(endMessage.message)
+            sendBotMessage(endMessage.message)
         }
     }
 
     private fun triggerBotMessage() {
-        outMessagesHandler.send(current.message)
+        sendBotMessage(current.message)
         if (current.next.size == 1) {
             multipleUserVariants = false
             moveToNext(current.next[0])
         } else {
             multipleUserVariants = true
         }
+    }
+
+    private fun sendBotMessage(message: String) {
+        logBotMessage(message)
+        outMessagesHandler.send(message)
+    }
+
+    private fun logBotMessage(message: String) {
+        log.add(LogMessage(message, true))
+    }
+
+    private fun logUserMessage(message: String) {
+        log.add(LogMessage(message, false))
     }
 
 }

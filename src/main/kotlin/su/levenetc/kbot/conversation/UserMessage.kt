@@ -15,6 +15,10 @@ open class UserMessage() : Message() {
     }
 }
 
+fun message(message: String): Message {
+    return UserMessage(message, ExactValidator(message))
+}
+
 fun anyUserMessage(): UserMessage {
     return UserMessage(EmptyMessageValidator())
 }
