@@ -9,4 +9,5 @@ class Message : Event() {
     var text: String = ""
     var source_team: String = ""
     var team: String = ""
+    var reply_to: Int = -1
 }

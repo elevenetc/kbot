@@ -15,6 +15,9 @@ class EventsParser {
 
         if (event.type == "message") {
             event = gson.fromJson(message, Message::class.java)
+            if ((event as Message).reply_to == -1) {
+                return
+            }
         }
 
         publishSubject.onNext(event)

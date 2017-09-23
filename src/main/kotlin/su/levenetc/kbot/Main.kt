@@ -1,15 +1,54 @@
 package su.levenetc.kbot
 
 import com.google.gson.Gson
-import su.levenetc.kbot.conversation.OutMessagesHandler
-import su.levenetc.kbot.conversation.waitForUserMessage
+import io.reactivex.Observable
+import su.levenetc.kbot.conversation.*
+import su.levenetc.kbot.models.Event
+import su.levenetc.kbot.models.Message
 
 
 class Main
 
 fun main(args: Array<String>) {
     val kBot = KBot(System.getenv("SLACK_TOKEN"))
-    startPingPong(kBot)
+    //startPingPong(kBot)
+    startSurvey(kBot)
+}
+
+private fun startSurvey(kBot: KBot) {
+    val model = initFromBotMessage("Hello, are you hungry?")
+            .then(
+                    anyUserMessage()
+                            .andFinish("Thanks, bye!")
+            )
+            .build()
+    kBot.start(object : KBot.InitCallback {
+
+
+        var conversation: Conversation? = null
+
+        override fun onError() {
+
+        }
+
+        override fun onSuccess(eventsObservable: Observable<Event>, writer: KBot.Writer) {
+
+            //userId: U15AQ3222
+            //channel: D1B12H674
+
+            if (conversation == null) {
+                conversation = Conversation(model, SlackOutMessageHandler("D1B12H674", writer)).start()
+            }
+
+            eventsObservable.filter({
+                it is Message
+            }).subscribe {
+                val message = it as Message
+                conversation?.onUserMessage(message.text)
+            }
+        }
+
+    })
 }
 
 private fun startPingPong(kBot: KBot) {
@@ -21,7 +60,6 @@ private fun startPingPong(kBot: KBot) {
 }
 
 class SlackOutMessageHandler(
-        val userId: String,
         val channgelId: String,
         val writer: KBot.Writer
 ) : OutMessagesHandler {
