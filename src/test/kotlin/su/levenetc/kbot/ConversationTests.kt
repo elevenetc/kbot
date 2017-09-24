@@ -181,7 +181,12 @@ class ConversationTests {
 
     @Test
     fun testTaskOnMessage() {
-        //TODO: add task on message test
+        //TODO: add task on message
+//        waitForUserMessage("load")
+//                .thenBot("id?")
+//                .then(
+//                        anyUserMessage().then()
+//                )
     }
 
     class OnePlusOneValidator(private val invalidMessage: String) : MessageValidator {

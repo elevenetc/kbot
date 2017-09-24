@@ -9,6 +9,10 @@ open class Message(
 
     val next: LinkedList<Message> = LinkedList()
 
+    fun build(): ConversationModel {
+        return ConversationModel(this)
+    }
+
     fun andFinish(): Message {
         next.add(EndMessage())
         return this
@@ -30,9 +34,13 @@ open class Message(
         return this
     }
 
-    fun build(): ConversationModel {
-        return ConversationModel(this)
+    fun thenBot(message: String): Message {
+        next.add(BotMessage(message))
+        return this
     }
 
+    fun thenAction(): Message {
+        return this
+    }
 
 }
