@@ -70,7 +70,9 @@ class KBot(private val token: String) {
                 conversation = if (userConversations.containsKey(userId)) {
                     userConversations.getValue(userId)
                 } else {
-                    Conversation(model, SlackOutMessageHandler(message.channel, writer)).start()
+                    val newConversation = Conversation(model, SlackOutMessageHandler(message.channel, writer)).start()
+                    userConversations.put(userId, newConversation)
+                    newConversation
                 }
 
                 conversation.onUserMessage(message.text)
