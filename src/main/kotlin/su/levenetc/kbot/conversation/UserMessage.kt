@@ -15,8 +15,15 @@ open class UserMessage() : Message() {
     }
 }
 
+//TODO: move messages to utils
 fun message(message: String): Message {
     return UserMessage(message, ExactValidator(message))
+}
+
+fun actOnUserMessage(action: MessageAction, validator: MessageValidator = EmptyMessageValidator()): UserMessage {
+    val result = UserMessage(validator)
+    result.action = action
+    return result
 }
 
 fun anyUserMessage(): UserMessage {
@@ -25,6 +32,10 @@ fun anyUserMessage(): UserMessage {
 
 fun waitForUserMessage(message: UserMessage): UserMessage {
     return message
+}
+
+fun waitForAnyUserMessage(): UserMessage {
+    return UserMessage(EmptyMessageValidator())
 }
 
 fun waitForUserMessage(message: String): UserMessage {

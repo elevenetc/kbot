@@ -148,8 +148,7 @@ class ConversationTests {
     fun testSimpleSurveyReport() {
         val model = initFromBotMessage(howAreYou)
                 .then(
-                        anyUserMessage()
-                                .andFinish(okBye)
+                        anyUserMessage().andFinish(okBye)
                 )
                 .build()
 
@@ -180,13 +179,52 @@ class ConversationTests {
     }
 
     @Test
-    fun testTaskOnMessage() {
-        //TODO: add task on message
-//        waitForUserMessage("load")
-//                .thenBot("id?")
-//                .then(
-//                        anyUserMessage().then()
-//                )
+    fun testDialog() {
+        val model = waitForUserMessage(messageA)
+                .then(BotMessage(messageB)
+                        .then(
+                                UserMessage(messageC)
+                                        .andFinish(messageD)
+                        )
+                )
+                .build()
+
+        val conversation = Conversation(model, outHandler)
+        conversation.start()
+        conversation.onUserMessage(messageA)
+        conversation.onUserMessage(messageC)
+
+        assertEquals(messageA, conversation.log[0].message)
+        assertEquals(messageB, conversation.log[1].message)
+        assertEquals(messageC, conversation.log[2].message)
+        assertEquals(messageD, conversation.log[3].message)
+    }
+
+    @Test
+    fun testActOnMessage() {
+
+        val action = Mockito.mock(MessageAction::class.java)
+
+
+        val model = waitForUserMessage(load)
+                .then(BotMessage(questionID)
+                        .then(actOnUserMessage(action)
+                                .then(BotMessage(result))
+                        )
+                )
+                .build()
+
+        val conversation = Conversation(model, outHandler)
+        conversation.start()
+        conversation.onUserMessage(load)
+        conversation.onUserMessage(id1)
+
+        Mockito.verify(action).act(id1)
+
+        assertEquals(load, conversation.log[0].message)
+        assertEquals(questionID, conversation.log[1].message)
+        assertEquals(id1, conversation.log[2].message)
+        assertEquals(result, conversation.log[3].message)
     }
 
     class OnePlusOneValidator(private val invalidMessage: String) : MessageValidator {

@@ -52,6 +52,7 @@ class Conversation(conversationModel: ConversationModel,
         val currentMessage = current as UserMessage
         if (currentMessage.validator.isValid(message)) {
 
+            currentMessage.action.act(message)
             val nextMessage = current.next[0]
             logUserMessage(message)
             moveToNext(nextMessage)

@@ -8,6 +8,7 @@ open class Message(
 ) {
 
     val next: LinkedList<Message> = LinkedList()
+    var action: MessageAction = EmptyMessageAction()
 
     fun build(): ConversationModel {
         return ConversationModel(this)
@@ -34,13 +35,12 @@ open class Message(
         return this
     }
 
-    fun thenBot(message: String): Message {
-        next.add(BotMessage(message))
-        return this
-    }
+//    fun thenBot(message: String): Message {
+//        next.add(BotMessage(message))
+//        return this
+//    }
 
-    fun thenAction(): Message {
-        return this
+    override fun toString(): String {
+        return message
     }
-
 }

@@ -12,7 +12,25 @@ class Main
 fun main(args: Array<String>) {
     val kBot = KBot(System.getenv("SLACK_TOKEN"))
     //startPingPong(kBot)
-    startSurvey(kBot)
+//    startSurvey(kBot)
+    loadDataById(kBot)
+}
+
+private fun loadDataById(kBot: KBot) {
+    val model = waitForUserMessage("load")
+            .then(BotMessage("which id?")
+                    .then(actOnUserMessage(object : MessageAction {
+                        override fun act(message: String) {
+                            Thread.sleep(5000)
+                        }
+
+                    })
+                            .then(BotMessage("handled").andFinish())
+                    )
+            )
+            .build()
+
+    kBot.start(KBot.ConversationCallback(model))
 }
 
 private fun startSurvey(kBot: KBot) {
@@ -39,7 +57,7 @@ private fun startSurvey(kBot: KBot) {
             if (conversation == null) {
                 conversation = Conversation(model, SlackOutMessageHandler("D1B12H674", writer)).start()
             }
-
+            1
             eventsObservable.filter({
                 it is Message
             }).subscribe {
